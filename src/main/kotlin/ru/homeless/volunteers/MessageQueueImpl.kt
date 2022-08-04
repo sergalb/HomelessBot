@@ -11,25 +11,24 @@ import org.telegram.telegrambots.meta.bots.AbsSender
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import java.io.PrintWriter
 import java.io.StringWriter
-import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
 
 @OptIn(DelicateCoroutinesApi::class)
 class MessageQueueImpl(private val absSender: AbsSender) : MessageQueue {
     private val logger = KotlinLogging.logger {}
-    private val queue = Channel<Pair<String, Long>>(Channel.UNLIMITED)
+    private val queue = Channel<Pair<String, Long>>(1024)
     private val DELAY = 1.seconds / 10
 
     init {
         GlobalScope.launch {
-            var last = System.currentTimeMillis().milliseconds
+//            var last = System.currentTimeMillis().milliseconds
             for ((text, id) in queue) {
                 process(text, id)
-                val cur = System.currentTimeMillis().milliseconds
-                logger.info { "$text, $id, time between messages ${(cur - last).inWholeMilliseconds}ms" }
-                last = cur
-                delay(DELAY )
+//                val cur = System.currentTimeMillis().milliseconds
+                logger.info { "$text, $id" }//, time between messages ${(cur - last).inWholeMilliseconds}ms" }
+//                last = cur
+                delay(DELAY)
             }
 
         }
@@ -45,6 +44,7 @@ class MessageQueueImpl(private val absSender: AbsSender) : MessageQueue {
             val sw = StringWriter()
             e.printStackTrace(PrintWriter(sw))
             logger.error { "Could not send message to chat $id because of $sw" }
+            //todo limit counts of retry, add fail message to sender
             sendMessage(text, id)
         }
     }

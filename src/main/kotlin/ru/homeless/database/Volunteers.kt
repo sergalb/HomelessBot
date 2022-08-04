@@ -3,25 +3,21 @@ package ru.homeless.database
 import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
-import org.jetbrains.exposed.dao.id.IdTable
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.jetbrains.exposed.sql.update
-import ru.homeless.volunteers.Phone
+import ru.homeless.SpreadSheetVolunteer
 
-enum class State {
-    UNSTARTED, STARTED, IDENTIFIED
+enum class VolunteerState {
+    STARTED, IDENTIFIED
 }
 
-object Volunteers : IdTable<Long>() {
+object Volunteers : LongIdTable() {
     val firstName = text("firstName")
-    val secondName = text("secondName")
-    val state = enumeration("state", State::class)
-    val phone = text("phone").nullable()
-    val email = text("email").nullable()
-    override val id = long("id").entityId()
+    val secondName = text("secondName").nullable()
+    val state = enumeration("state", VolunteerState::class)
+    val phone = text("phone").nullable().uniqueIndex()
+    val email = text("email").nullable().uniqueIndex()
+    val status = text("status").nullable()
 
 }
 
@@ -33,34 +29,41 @@ class Volunteer(id: EntityID<Long>) : LongEntity(id) {
     var state by Volunteers.state
     var phone by Volunteers.phone
     var email by Volunteers.email
+    var status by Volunteers.status
+    val messages by Message via MessagesVolunteers
 }
 
 fun volunteersStateById(id: Long) = transaction {
-    Volunteers.slice(Volunteers.state)
-        .select(Volunteers.id eq id)
-        .map { it[Volunteers.state] }
-        .firstOrNull()
+    Volunteer.findById(id)?.state
 }
 
-fun updatePhone(phone: Phone, newState: State) = transaction {
-    Volunteers.update {
-        it[Volunteers.phone] = phone.normalizedNumber
-        it[state] = newState
-    }
+fun updatePhoneAndState(id: Long, phone: Phone, newState: VolunteerState) = transaction {
+    val volunteer = Volunteer.findById(id)
+    volunteer?.phone = phone.normalizedNumber
+    volunteer?.state = newState
+
+}
+
+fun updateVolunteer(id: Long, spreadSheetVolunteer: SpreadSheetVolunteer, newState: VolunteerState) = transaction {
+    val volunteer = Volunteer.findById(id)
+    volunteer?.firstName = spreadSheetVolunteer.name
+    volunteer?.secondName = spreadSheetVolunteer.lastName
+    volunteer?.phone = spreadSheetVolunteer.phone.normalizedNumber
+    volunteer?.email = spreadSheetVolunteer.email
+    volunteer?.status = spreadSheetVolunteer.status
+    volunteer?.state = newState
 }
 
 fun volunteersIdByPhones(phones: List<Phone>) = transaction {
-    Volunteers.slice(Volunteers.id)
-        .select(Volunteers.phone inList phones.map { it.normalizedNumber })
-        .map { it[Volunteers.id].value }
-
+    Volunteer.find { Volunteers.phone inList phones.map { it.normalizedNumber } }
+        .map { it.id.value }
 }
 
 fun insertVolunteer(
     id: Long,
     firstName: String,
-    secondName: String,
-    state: State,
+    secondName: String?,
+    state: VolunteerState,
     phone: String? = null,
     email: String? = null
 ) = transaction {
@@ -71,4 +74,10 @@ fun insertVolunteer(
         this.phone = phone
         this.email = email
     }
+}
+
+fun findVolunteerByPhone(phone: Phone) = transaction {
+    Volunteer.find {
+        Volunteers.phone eq phone.normalizedNumber
+    }.firstOrNull()
 }
