@@ -1,0 +1,43 @@
+package ru.homeless.database
+
+import org.jetbrains.exposed.dao.LongEntity
+import org.jetbrains.exposed.dao.LongEntityClass
+import org.jetbrains.exposed.dao.id.EntityID
+import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.deleteAll
+import org.jetbrains.exposed.sql.transactions.transaction
+
+enum class Field {
+    FIRST_NAME,
+    SECOND_NAME,
+    PHONE,
+    EMAIL,
+    STATUS
+
+}
+
+object SpreadSheetUpdates: LongIdTable() {
+    val field = enumeration("field", Field::class)
+    val oldValue = varchar("oldValue", 200)
+    val newValue = varchar("newValue", 200)
+    val volunteerPhone = varchar("phone", 30).nullable()
+        .also{ this@SpreadSheetUpdates.foreignKey(it to Volunteers.phone) }
+    val voluteerEmail = varchar("email", 200).nullable()
+        .also{ this@SpreadSheetUpdates.foreignKey(it to Volunteers.email) }
+
+}
+
+class SpreadSheetUpdate(id: EntityID<Long>): LongEntity(id) {
+    companion object : LongEntityClass<SpreadSheetUpdate>(SpreadSheetUpdates)
+    var field by SpreadSheetUpdates.field
+    var oldValue by SpreadSheetUpdates.oldValue
+    var newValue by SpreadSheetUpdates.newValue
+    var volunteerPhone by SpreadSheetUpdates.volunteerPhone
+    var volunteerEmail by SpreadSheetUpdates.voluteerEmail
+}
+
+fun takeAllUpdatesAndClean() = transaction {
+    val res = SpreadSheetUpdate.all().toList()
+    SpreadSheetUpdates.deleteAll()
+    res.toList()
+}

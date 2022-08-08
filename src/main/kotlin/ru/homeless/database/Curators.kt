@@ -10,7 +10,6 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.bots.AbsSender
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import ru.homeless.messageBundle
-import java.text.MessageFormat
 
 enum class Roles {
     BOSS {
@@ -50,14 +49,16 @@ enum class CuratorState {
     ASK_CONFIRMATION,
     WAITING,
     GRANT_ROLE,
+    REQUEST_ON_UPDATE,
+    REQUEST_REMOVE_UPDATE,
 }
 
 object Curators : LongIdTable() {
-    val firstName = text("firstName")
-    val secondName = text("secondName").nullable()
+    val firstName = varchar("firstName", 200)
+    val secondName = varchar("secondName", 200).nullable()
     val state = enumeration("state", CuratorState::class)
     val role = enumeration("role", Roles::class)
-    val phone = text("phone").nullable()
+    val phone = varchar("phone", 30).nullable()
     val message = reference("message", Messages).nullable()
 }
 
@@ -136,7 +137,6 @@ fun checkPermission(
     absSender: AbsSender,
     chatId: Long,
     permission: Roles.() -> Boolean,
-    action: String,
     logger: KLogger
 ): Boolean {
     if (curator == null) {
@@ -155,8 +155,8 @@ fun checkPermission(
     if (!curator.role.permission()) {
         val answer = SendMessage()
         answer.setChatId(curator.id.value)
-        logger.warn { "User ${curator.firstName} ${curator.secondName} with role $curator try to $action." }
-        answer.text = MessageFormat.format(messageBundle.getString("you.have.not.permission.on"), action)
+        logger.warn { "User ${curator.firstName} ${curator.secondName} with role ${curator.role} have not permission on action" }
+        answer.text = messageBundle.getString("you.have.not.permission.on")
         try {
             absSender.execute(answer)
         } catch (e: TelegramApiException) {
@@ -172,10 +172,9 @@ fun checkPermission(
     id: Long,
     absSender: AbsSender,
     permission: Roles.() -> Boolean,
-    action: String,
     logger: KLogger
 ): Boolean {
-    return checkPermission(curatorById(id), absSender, id, permission, action, logger)
+    return checkPermission(curatorById(id), absSender, id, permission, logger)
 }
 
 fun findCuratorByPhone(phone: Phone) = transaction {

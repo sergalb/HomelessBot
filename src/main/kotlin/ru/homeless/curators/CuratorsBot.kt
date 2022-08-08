@@ -4,6 +4,8 @@ import mu.KotlinLogging
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.homeless.curators.commands.GrantAccessCommand
+import ru.homeless.curators.commands.OnStatusUpdateCommand
+import ru.homeless.curators.commands.RemoveStatusUpdateCommand
 import ru.homeless.curators.commands.SendMessageCommand
 import ru.homeless.curators.commands.StartCommand
 import ru.homeless.database.CuratorState
@@ -17,9 +19,11 @@ val curatorsBot = object : TelegramLongPollingCommandBot() {
         register(StartCommand)
         register(SendMessageCommand)
         register(GrantAccessCommand)
+        register(OnStatusUpdateCommand)
+        register(RemoveStatusUpdateCommand)
     }
 
-    private val curatorsBotToken: String by lazy { ru.homeless.getBotToken("curators_bot_token") }
+    private val curatorsBotToken: String by lazy { ru.homeless.getLocalProperty("curators_bot_token") }
 
     override fun getBotToken() = curatorsBotToken
 
@@ -35,6 +39,8 @@ val curatorsBot = object : TelegramLongPollingCommandBot() {
             CuratorState.SEND_PHONE_OR_EMAIL_OR_STATUS -> SendMessageCommand.onSchedule(curator, updateMessage, this)
             CuratorState.SCHEDULE_MESSAGE -> SendMessageCommand.onConfirmation(curator, updateMessage, this)
             CuratorState.GRANT_ROLE -> GrantAccessCommand.onCandidateContact(curator, updateMessage, this)
+            CuratorState.REQUEST_ON_UPDATE -> OnStatusUpdateCommand.processUpdateSetup(curator, updateMessage, this)
+            CuratorState.REQUEST_REMOVE_UPDATE -> RemoveStatusUpdateCommand.processRemoveUpdate(curator, updateMessage, this)
             else -> logger.error { "Could not find curator for ${updateMessage.from.firstName} ${updateMessage.from.lastName}" }
         }
     }

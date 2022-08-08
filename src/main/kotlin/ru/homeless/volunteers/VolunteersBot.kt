@@ -25,7 +25,7 @@ object VolunteersBoot : TelegramLongPollingCommandBot(), MessageReceiver {
         }
     }
 
-    private val volunteersBotToken: String by lazy { ru.homeless.getBotToken("volunteers_bot_token") }
+    private val volunteersBotToken: String by lazy { ru.homeless.getLocalProperty("volunteers_bot_token") }
 
     override fun getBotToken(): String = volunteersBotToken
 

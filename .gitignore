@@ -1,7 +1,8 @@
 .gradle
-gradle
 build
 .idea
 local.properties
 src/test/kotlin/EndToEndTests.kt
 data
+tokens
+src/main/resources/google-credentials.json

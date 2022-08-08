@@ -1,5 +1,6 @@
 package ru.homeless.volunteers
 
+//import ru.homeless.google.findUserByPhone
 import mu.KotlinLogging
 import org.telegram.telegrambots.extensions.bots.commandbot.commands.BotCommand
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
@@ -14,7 +15,7 @@ import ru.homeless.database.insertVolunteer
 import ru.homeless.database.updatePhoneAndState
 import ru.homeless.database.updateVolunteer
 import ru.homeless.database.volunteersStateById
-import ru.homeless.findUserByPhone
+import ru.homeless.google.findUserByPhone
 import ru.homeless.keyboardWithContact
 import ru.homeless.messageBundle
 import java.text.MessageFormat
@@ -48,7 +49,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
     }
 
     fun processNumberMessage(message: Message, absSender: AbsSender) {
-        val normalizedPhone = Phone.normalizedPhoneByNumber(
+        val normalizedPhone = Phone.byNumber(
             if (message.hasContact()) {
                 message.contact.phoneNumber
             } else {
@@ -70,7 +71,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
 
         val spreadsheetVolunteer = findUserByPhone(normalizedPhone)
         if (spreadsheetVolunteer != null) {
-            updateVolunteer(message.chatId, spreadsheetVolunteer, VolunteerState.IDENTIFIED)
+            updateVolunteer(message.chatId, spreadsheetVolunteer, normalizedPhone, VolunteerState.IDENTIFIED)
         } else {
             updatePhoneAndState(message.chatId, normalizedPhone, VolunteerState.IDENTIFIED)
         }

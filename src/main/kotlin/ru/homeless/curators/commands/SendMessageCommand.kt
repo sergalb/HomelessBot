@@ -32,7 +32,6 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 user.id,
                 absSender,
                 Roles::hasMessagePermission,
-                "отправку сообщения пользователям",
                 logger
             )
         ) return
@@ -54,13 +53,10 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 absSender,
                 message.chatId,
                 Roles::hasMessagePermission,
-                "отправку сообщения пользователям",
                 logger
             )
         ) return
 
-
-        //todo check inserted text into db
         curator.updateMessageAndState(message.text, CuratorState.SEND_MESSAGE)
 
         val answer = SendMessage()
@@ -79,7 +75,6 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 absSender,
                 message.chatId,
                 Roles::hasMessagePermission,
-                "отправку сообщения пользователям",
                 logger
             )
         ) return
@@ -139,7 +134,6 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 absSender,
                 message.chatId,
                 Roles::hasMessagePermission,
-                "отправку сообщения пользователям",
                 logger
             )
         ) return
@@ -152,7 +146,6 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 absSender,
                 message.chatId,
                 Roles::hasMessagePermission,
-                "отправку сообщения пользователям",
                 logger
             )
         ) return
@@ -161,7 +154,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
         answer.setChatId(message.chatId)
         answer.text = messageBundle.getString("confirm.message")
         val curatorMessage = curator.lastMessage()
-        if (curatorMessage == null) {
+        if (curatorMessage == null ) {
             //todo add description
             return
         }
@@ -178,7 +171,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
     }
 
     private fun confirmationMessage(curator: Curator, volunteers: List<Volunteer>): String {
-        val message = curator.lastMessage()
+        val message = curator.lastMessage()?.text
         return MessageFormat.format(
             messageBundle.getString("curator.take.contacts"),
             volunteers.size,

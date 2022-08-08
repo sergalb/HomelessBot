@@ -16,6 +16,7 @@ import ru.homeless.database.findCuratorByPhone
 import ru.homeless.database.personByContact
 import ru.homeless.database.updateCuratorStateById
 import ru.homeless.messageBundle
+import ru.homeless.sendMessage
 import java.text.MessageFormat
 
 object GrantAccessCommand : BotCommand("grant_access", "promote candidate to curator") {
@@ -27,7 +28,6 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
                 user.id,
                 absSender,
                 Roles::hasRoleSpreadPermission,
-                "выдачу доступа.",
                 logger
             )
 
@@ -50,7 +50,6 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
                 absSender,
                 message.chatId,
                 Roles::hasMessagePermission,
-                "отправку сообщения пользователям",
                 logger
             )
         ) return
@@ -59,7 +58,9 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
         val candidate = personByContact(contact, ::findCuratorByPhone)
 
         if (candidate == null) {
-            //todo could not find candidate message
+            absSender.sendMessage(messageBundle.getString("could.not.find.candidate.by.phone"), message.chatId) {
+                logger.error { "Could not send could.not.find.candidate.by.phone message because of $it" }
+            }
             logger.error { "candidate on role grant is null" }
             return
         }
@@ -69,7 +70,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
             "2" -> Roles.BOSS
             else -> {
                 //todo wrong role message
-                logger.error { "new role for grant access invalid: '$role'" }
+                logger.error { "New role for grant access invalid: '$role'" }
                 return
             }
         }
@@ -79,7 +80,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
         answer.text = MessageFormat.format(
             messageBundle.getString("success.role.grant"),
             candidate.firstName,
-            candidate.secondName,
+            candidate.secondName ?: "",
             newRole.permissionDescription()
         )
         try {

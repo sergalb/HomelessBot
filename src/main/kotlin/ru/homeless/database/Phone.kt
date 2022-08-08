@@ -16,7 +16,7 @@ class Phone private constructor(val normalizedNumber: String)
     }
 
     companion object {
-        fun normalizedPhoneByNumber(number: String): Phone? {
+        fun byNumber(number: String): Phone? {
             val normalized = number.filter { it.isDigit() }
             return if (normalized.all { it.isDigit() } && 11 <= normalized.length && normalized.length <= 15) {
                 Phone(normalized)

@@ -44,7 +44,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
 
 
     fun processNumberMessage(candidate: Curator, message: Message, absSender: AbsSender) {
-        val normalizedPhone = Phone.normalizedPhoneByNumber(
+        val normalizedPhone = Phone.byNumber(
             if (message.hasContact()) {
                 message.contact.phoneNumber
             } else {
