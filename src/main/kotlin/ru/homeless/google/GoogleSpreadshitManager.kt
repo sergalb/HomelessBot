@@ -14,7 +14,6 @@ import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import mu.KotlinLogging
 import ru.homeless.database.Phone
-import ru.homeless.database.Volunteers.status
 import ru.homeless.getLocalProperty
 import java.io.File
 import java.io.FileNotFoundException
@@ -83,7 +82,7 @@ data class SpreadSheetVolunteer(
             val lastName = row.getOrNull(4) as? String
             val email = row.getOrNull(5) as? String
             val phone = (row.getOrNull(6) as? String)?.let { Phone.byNumber(it) }
-            val status = row.getOrNull(16) as? String
+            val status = row.getOrNull(17) as? String
             if (phone == null && email == null) return null
             return SpreadSheetVolunteer(name, lastName, email, phone, status)
         }
@@ -96,7 +95,7 @@ fun findUserByPhone(phone: Phone): SpreadSheetVolunteer? {
         val table = getWholeTable()
 
         for (row in table) {
-            val phoneCell = row[6]
+            val phoneCell = row.getOrNull(6)
             val rowPhone = (phoneCell as? String)?.let { Phone.byNumber(it) }
             if (rowPhone == phone) {
                 return SpreadSheetVolunteer.fromRow(row)

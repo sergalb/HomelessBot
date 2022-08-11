@@ -5,6 +5,7 @@ import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.bots.AbsSender
@@ -46,7 +47,6 @@ enum class CuratorState {
     SEND_MESSAGE,
     SEND_PHONE_OR_EMAIL_OR_STATUS,
     SCHEDULE_MESSAGE,
-    ASK_CONFIRMATION,
     WAITING,
     GRANT_ROLE,
     REQUEST_ON_UPDATE,
@@ -59,7 +59,7 @@ object Curators : LongIdTable() {
     val state = enumeration("state", CuratorState::class)
     val role = enumeration("role", Roles::class)
     val phone = varchar("phone", 30).nullable()
-    val message = reference("message", Messages).nullable()
+    val message = reference("message", Messages, onDelete = ReferenceOption.SET_NULL).nullable()
 }
 
 class Curator(id: EntityID<Long>) : LongEntity(id) {
@@ -102,6 +102,10 @@ class Curator(id: EntityID<Long>) : LongEntity(id) {
     fun updateRole(newRole: Roles, newState: CuratorState = CuratorState.WAITING) = transaction {
         role = newRole
         state = newState
+    }
+
+    fun deleteLastMessage() = transaction {
+        message?.delete()
     }
 }
 

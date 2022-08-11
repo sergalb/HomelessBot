@@ -10,10 +10,11 @@ import org.telegram.telegrambots.meta.bots.AbsSender
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import ru.homeless.database.Curator
 import ru.homeless.database.CuratorState
+import ru.homeless.database.Phone
 import ru.homeless.database.Roles
 import ru.homeless.database.checkPermission
+import ru.homeless.database.curatorById
 import ru.homeless.database.findCuratorByPhone
-import ru.homeless.database.personByContact
 import ru.homeless.database.updateCuratorStateById
 import ru.homeless.messageBundle
 import ru.homeless.sendMessage
@@ -23,7 +24,10 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
     private val logger = KotlinLogging.logger {}
 
     override fun execute(absSender: AbsSender, user: User, chat: Chat, arguments: Array<out String>?) {
-
+        val curator = curatorById(user.id)
+        if (curator?.state != CuratorState.WAITING) {
+            curator?.deleteLastMessage()
+        }
         if (!checkPermission(
                 user.id,
                 absSender,
@@ -55,21 +59,25 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
         ) return
 
         val (contact, role) = checkCandidateMessage(message, absSender) ?: return
-        val candidate = personByContact(contact, ::findCuratorByPhone)
+        val candidate = Phone.byNumber(contact)?.let { findCuratorByPhone(it) }
 
         if (candidate == null) {
             absSender.sendMessage(messageBundle.getString("could.not.find.candidate.by.phone"), message.chatId) {
                 logger.error { "Could not send could.not.find.candidate.by.phone message because of $it" }
             }
-            logger.error { "candidate on role grant is null" }
+            logger.error { "Candidate on role grant is null" }
             return
         }
 
         val newRole = when (role) {
+            "0" -> Roles.CANDIDATE
             "1" -> Roles.CURATOR
             "2" -> Roles.BOSS
             else -> {
-                //todo wrong role message
+                absSender.sendMessage(
+                    messageBundle.getString("wrong.role.message"),
+                    message.chatId
+                )
                 logger.error { "New role for grant access invalid: '$role'" }
                 return
             }
@@ -87,10 +95,13 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
             candidate.updateRole(newRole)
             curator.updateState(CuratorState.WAITING)
             absSender.execute(answer)
+            absSender.sendMessage(
+                messageBundle.getString("your.role.updated"),
+                candidate.id.value
+            )
         } catch (e: TelegramApiException) {
             logger.error { "Exception while sending 'success.role.grant' message." }
         }
-
     }
 
     private fun checkCandidateMessage(message: Message, absSender: AbsSender): Pair<String, String>? {

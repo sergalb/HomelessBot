@@ -6,6 +6,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Chat
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.User
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.bots.AbsSender
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import ru.homeless.database.Curator
@@ -69,6 +70,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
         val gratefulMessage = SendMessage()
         gratefulMessage.text = messageBundle.getString("thank.you.for.phone.curator")
         gratefulMessage.setChatId(message.chatId)
+        gratefulMessage.replyMarkup = ReplyKeyboardRemove(true)
         try {
             absSender.execute(gratefulMessage)
         } catch (e: TelegramApiException) {

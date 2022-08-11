@@ -12,6 +12,16 @@ enum class VolunteerState {
     STARTED, IDENTIFIED
 }
 
+private val EMAIL_PATTERN = Regex(
+    "[a-zA-Z0-9+._%\\-]{1,256}" +
+            "@" +
+            "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+            "(" +
+            "\\." +
+            "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+            ")+"
+)
+
 object Volunteers : LongIdTable() {
     val firstName = varchar("firstName", 200)
     val secondName = varchar("secondName", 200).nullable()
@@ -114,8 +124,28 @@ fun findVolunteerByPhone(phone: Phone) = transaction {
     }.firstOrNull()
 }
 
+fun findVolunteerByStatus(status: String) = transaction {
+    Volunteer.find {
+        Volunteers.status eq status
+    }.firstOrNull()
+}
+
+fun findVolunteerByEmail(email: String?): Volunteer? {
+    return email?.let {
+        if (email.matches(EMAIL_PATTERN)) {
+            transaction {
+                Volunteer.find { Volunteers.email eq email }.firstOrNull()
+            }
+        } else null
+    }
+}
+
 fun findVolunteerByPhone(phone: String?): Volunteer? =
     phone?.let { Phone.byNumber(phone)?.let { findVolunteerByPhone(it) } }
+
+fun findVolunteerByContact(contact: String): Volunteer? {
+    return findVolunteerByPhone(contact) ?: findVolunteerByEmail(contact) ?: findVolunteerByStatus(contact)
+}
 
 
 fun isStatusExistForVolunteers(status: String) = transaction {

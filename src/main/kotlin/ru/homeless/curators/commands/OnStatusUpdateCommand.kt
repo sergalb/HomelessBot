@@ -25,7 +25,9 @@ object OnStatusUpdateCommand :
     //todo make in divided steps
     override fun execute(absSender: AbsSender, user: User, chat: Chat, arguments: Array<out String>?) {
         val curator = curatorById(user.id)
-
+        if (curator?.state != CuratorState.WAITING) {
+            curator?.deleteLastMessage()
+        }
         if (curator != null) {
             curator.updateState(CuratorState.REQUEST_ON_UPDATE)
             absSender.sendMessage(

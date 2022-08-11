@@ -38,6 +38,7 @@ fun findMessageByStatuses(oldStatus: String, newStatus: String) = transaction {
 fun deleteMessagesWithStatuses(oldStatus: String, newStatus: String) = transaction {
     MessagesOnStatusUpdate.deleteWhere { (MessagesOnStatusUpdate.oldStatus eq oldStatus) and (MessagesOnStatusUpdate.newStatus eq newStatus) }
 }
+
 class InsertUpdateOnDuplicate(table: Table, val onDupUpdate: List<Column<*>>) : InsertStatement<Number>(table) {
     override fun prepareSQL(transaction: Transaction): String {
         val onUpdateSQL = if (onDupUpdate.isNotEmpty()) {
@@ -61,9 +62,3 @@ fun <T : Table> T.insertOnDuplicateKeyUpdate(
     TransactionManager.current().exec(insert)
 
 }
-
-
-//class MessageOnStatusUpdate(key: EntityID<String>): Entity<String>(key) {
-//    companion object : EntityClass<String, MessageOnStatusUpdate>(MessagesOnStatusUpdate)
-//
-//}

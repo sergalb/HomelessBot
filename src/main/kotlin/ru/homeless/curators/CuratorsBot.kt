@@ -10,6 +10,8 @@ import ru.homeless.curators.commands.SendMessageCommand
 import ru.homeless.curators.commands.StartCommand
 import ru.homeless.database.CuratorState
 import ru.homeless.database.curatorById
+import ru.homeless.messageBundle
+import ru.homeless.sendMessage
 
 
 val curatorsBot = object : TelegramLongPollingCommandBot() {
@@ -21,13 +23,21 @@ val curatorsBot = object : TelegramLongPollingCommandBot() {
         register(GrantAccessCommand)
         register(OnStatusUpdateCommand)
         register(RemoveStatusUpdateCommand)
+        registerDefaultAction { absSender, message ->
+            absSender.sendMessage(messageBundle.getString("unknown.command"), message.chatId)
+            logger.info {
+                """Unknown command curator: 
+                    volunteer: ${message.chatId},
+                    text: ${message.text}""".trimIndent()
+            }
+        }
     }
 
     private val curatorsBotToken: String by lazy { ru.homeless.getLocalProperty("curators_bot_token") }
 
     override fun getBotToken() = curatorsBotToken
 
-    override fun getBotUsername() = "HomelessCuratorsBot"
+    override fun getBotUsername() = "Бот кураторов Ночлежки"
 
     override fun processNonCommandUpdate(update: Update) {
         val updateMessage = update.message
@@ -41,7 +51,7 @@ val curatorsBot = object : TelegramLongPollingCommandBot() {
             CuratorState.GRANT_ROLE -> GrantAccessCommand.onCandidateContact(curator, updateMessage, this)
             CuratorState.REQUEST_ON_UPDATE -> OnStatusUpdateCommand.processUpdateSetup(curator, updateMessage, this)
             CuratorState.REQUEST_REMOVE_UPDATE -> RemoveStatusUpdateCommand.processRemoveUpdate(curator, updateMessage, this)
-            else -> logger.error { "Could not find curator for ${updateMessage.from.firstName} ${updateMessage.from.lastName}" }
+            else -> logger.error { "Could not find curator state for ${updateMessage.from.firstName} ${updateMessage.from.lastName}. State: ${curator?.state}" }
         }
     }
 

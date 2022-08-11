@@ -5,6 +5,9 @@ import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingC
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.homeless.database.VolunteerState
 import ru.homeless.database.volunteersStateById
+import ru.homeless.messageBundle
+import ru.homeless.sendMessage
+import java.time.LocalDateTime
 
 val volunteersBot = VolunteersBoot
 
@@ -16,9 +19,9 @@ object VolunteersBoot : TelegramLongPollingCommandBot(), MessageReceiver {
     init {
         register(startCommand)
         registerDefaultAction { absSender, message ->
-            //todo help message
+            absSender.sendMessage(messageBundle.getString("unknown.command"), message.chatId)
             logger.info {
-                """Unknown command used: 
+                """Unknown command volunteer: 
                     user: ${message.chatId},
                     text: ${message.text}""".trimIndent()
             }
@@ -29,7 +32,7 @@ object VolunteersBoot : TelegramLongPollingCommandBot(), MessageReceiver {
 
     override fun getBotToken(): String = volunteersBotToken
 
-    override fun getBotUsername() = "homeless_volunteers"
+    override fun getBotUsername() = "Бот волонтеров Ночлежкиr"
 
     override fun processNonCommandUpdate(update: Update?) {
         val message = update?.message ?: return
@@ -37,7 +40,6 @@ object VolunteersBoot : TelegramLongPollingCommandBot(), MessageReceiver {
         if (state == VolunteerState.STARTED) {
             startCommand.processNumberMessage(message, this)
         } else {
-            //todo add warn to user; is it safe print user message?
             logger.warn {
                 """Get message from volunteer in state ${state?.toString() ?: "unstarted"}. 
                     Message: ${message.text}""".trimIndent()
@@ -45,7 +47,20 @@ object VolunteersBoot : TelegramLongPollingCommandBot(), MessageReceiver {
         }
     }
 
-    override suspend fun receive(text: String, ids: List<Long>) {
-        ids.forEach { messageQueue.sendMessage(text, it) }
+    override suspend fun receive(
+        text: String,
+        ids: List<Long>,
+        date: LocalDateTime,
+        onError: (Int, Exception) -> Unit
+    ) {
+        ids.forEachIndexed { ind, id ->
+            messageQueue.scheduleMessage(text, id, date) { onError(ind, it) }
+        }
+    }
+
+    override suspend fun receive(text: String, ids: List<Long>, onError: (Int, Exception) -> Unit) {
+        ids.forEachIndexed { ind, id ->
+            messageQueue.sendMessage(text, id) { onError(ind, it) }
+        }
     }
 }

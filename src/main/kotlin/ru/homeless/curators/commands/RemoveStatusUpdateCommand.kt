@@ -22,6 +22,9 @@ object RemoveStatusUpdateCommand :
 
     override fun execute(absSender: AbsSender, user: User, chat: Chat, arguments: Array<out String>?) {
         val curator = curatorById(user.id)
+        if (curator?.state != CuratorState.WAITING) {
+            curator?.deleteLastMessage()
+        }
         if (curator != null) {
             curator.updateState(CuratorState.REQUEST_REMOVE_UPDATE)
             absSender.sendMessage(
