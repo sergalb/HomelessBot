@@ -13,11 +13,13 @@ import com.google.api.client.util.store.FileDataStoreFactory
 import com.google.api.services.sheets.v4.Sheets
 import com.google.api.services.sheets.v4.SheetsScopes
 import mu.KotlinLogging
+import ru.homeless.credentialsPath
 import ru.homeless.database.Phone
 import ru.homeless.getLocalProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
+import kotlin.io.path.reader
 
 private val logger = KotlinLogging.logger {}
 private const val APPLICATION_NAME = "Google Sheets API Java Quickstart"
@@ -44,7 +46,7 @@ private val service by lazy {
  */
 
 fun getCredentials(HTTP_TRANSPORT: NetHttpTransport, scopes: List<String>): Credential {
-    val credentialsReader = File(CREDENTIALS_FILE_PATH).reader()
+    val credentialsReader = credentialsPath.resolve(CREDENTIALS_FILE_PATH).reader()
     val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, credentialsReader)
 
     // Build flow and trigger user authorization request.

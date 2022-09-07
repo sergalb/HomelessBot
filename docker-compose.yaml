@@ -5,8 +5,8 @@ services:
     image: mysql:latest
     command: --init-file /data/application/init.sql
     volumes:
-      - ~/homeless-bot-mysql-data:/var/lib/mysql
-      - ./init.sql:/data/application/init.sql
+      - ~/homeless-bot/mysql-data:/var/lib/mysql
+      - ~/homeless-bot/init.sql:/data/application/init.sql
 
     environment:
       MYSQL_DATABASE: homeless
@@ -18,3 +18,5 @@ services:
       - mysql
     volumes:
       - ~/homeless-bot/logs:/logs
+      - ~/homeless-bot/local-properties
+      - ~/homeless-bot/google-credentials.json
