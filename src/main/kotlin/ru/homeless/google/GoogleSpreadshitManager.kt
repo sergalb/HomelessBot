@@ -18,8 +18,6 @@ import ru.homeless.getLocalProperty
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.IOException
-import java.io.InputStream
-import java.io.InputStreamReader
 
 private val logger = KotlinLogging.logger {}
 private const val APPLICATION_NAME = "Google Sheets API Java Quickstart"
@@ -46,9 +44,8 @@ private val service by lazy {
  */
 
 fun getCredentials(HTTP_TRANSPORT: NetHttpTransport, scopes: List<String>): Credential {
-    val credentialsStream = loadResource(CREDENTIALS_FILE_PATH)
-        ?: throw FileNotFoundException("Resource not found: " + CREDENTIALS_FILE_PATH)
-    val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, InputStreamReader(credentialsStream))
+    val credentialsReader = File(CREDENTIALS_FILE_PATH).reader()
+    val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, credentialsReader)
 
     // Build flow and trigger user authorization request.
     val flow = GoogleAuthorizationCodeFlow.Builder(
@@ -105,8 +102,4 @@ fun findUserByPhone(phone: Phone): SpreadSheetVolunteer? {
         logger.error { e.message}
     }
     return null
-}
-
-fun loadResource(path: String): InputStream? {
-    return Thread.currentThread().contextClassLoader.getResourceAsStream(path)
 }

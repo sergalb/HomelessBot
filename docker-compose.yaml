@@ -1,0 +1,20 @@
+version: "3.7"
+
+services:
+  mysql:
+    image: mysql:latest
+    command: --init-file /data/application/init.sql
+    volumes:
+      - ~/homeless-bot-mysql-data:/var/lib/mysql
+      - ./init.sql:/data/application/init.sql
+
+    environment:
+      MYSQL_DATABASE: homeless
+      MYSQL_ROOT_PASSWORD: "${PASSWORD}"
+  bot:
+    image:
+      sergalb/homeless-bot:latest
+    depends_on:
+      - mysql
+    volumes:
+      - ~/homeless-bot/logs:/logs

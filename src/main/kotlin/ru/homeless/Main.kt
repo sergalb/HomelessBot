@@ -18,8 +18,6 @@ import ru.homeless.database.Volunteers
 import ru.homeless.google.initSpreadsheetUpdatesDaemon
 import ru.homeless.volunteers.volunteersBot
 import java.io.File
-import java.io.FileInputStream
-import java.io.InputStreamReader
 import java.util.Properties
 import java.util.ResourceBundle
 
@@ -44,10 +42,10 @@ fun getLocalProperty(key: String): String {
     val properties = Properties()
     val localProperties = File("local.properties")
     if (localProperties.isFile) {
-        InputStreamReader(FileInputStream(localProperties), Charsets.UTF_8).use { reader ->
-            properties.load(reader)
+        localProperties.reader().use {
+            properties.load(it)
         }
-    } else error("File from not found")
+    } else error("File 'local.properties' not found")
 
     return properties.getProperty(key)
 }
@@ -65,7 +63,6 @@ fun main() {
     }
 
     initSpreadsheetUpdatesDaemon()
-
     try {
         val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
         telegramBotsApi.registerBot(volunteersBot)

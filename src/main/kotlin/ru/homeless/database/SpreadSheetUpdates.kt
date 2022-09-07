@@ -21,10 +21,7 @@ object SpreadSheetUpdates: LongIdTable() {
     val oldValue = varchar("oldValue", 200)
     val newValue = varchar("newValue", 200)
     val volunteerPhone = varchar("phone", 30).nullable()
-        .also{ this@SpreadSheetUpdates.foreignKey(it to Volunteers.phone) }
     val voluteerEmail = varchar("email", 200).nullable()
-        .also{ this@SpreadSheetUpdates.foreignKey(it to Volunteers.email) }
-
 }
 
 class SpreadSheetUpdate(id: EntityID<Long>): LongEntity(id) {
@@ -39,5 +36,5 @@ class SpreadSheetUpdate(id: EntityID<Long>): LongEntity(id) {
 fun takeAllUpdatesAndClean() = transaction {
     val res = SpreadSheetUpdate.all().toList()
     SpreadSheetUpdates.deleteAll()
-    res.toList()
+    res
 }

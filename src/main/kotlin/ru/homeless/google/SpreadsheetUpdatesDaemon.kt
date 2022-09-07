@@ -13,7 +13,7 @@ import ru.homeless.database.takeAllUpdatesAndClean
 import ru.homeless.volunteers.volunteersBot
 import kotlin.time.Duration.Companion.minutes
 
-private val DELAY = (10).minutes
+private val DELAY = (1).minutes
 
 @OptIn(DelicateCoroutinesApi::class)
 fun initSpreadsheetUpdatesDaemon() = GlobalScope.launch {
