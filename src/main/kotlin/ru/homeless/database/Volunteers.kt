@@ -4,7 +4,9 @@ import org.jetbrains.exposed.dao.LongEntity
 import org.jetbrains.exposed.dao.LongEntityClass
 import org.jetbrains.exposed.dao.id.EntityID
 import org.jetbrains.exposed.dao.id.LongIdTable
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import ru.homeless.google.SpreadSheetVolunteer
 
@@ -69,6 +71,10 @@ class Volunteer(id: EntityID<Long>) : LongEntity(id) {
     fun updateStatus(newStatus: String) = transaction {
         status = newStatus
     }
+}
+
+fun getVolunteersCount() = transaction {
+    Volunteers.selectAll().count()
 }
 
 fun volunteersStateById(id: Long) = transaction {

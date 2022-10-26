@@ -19,7 +19,7 @@ object VolunteersBoot : TelegramLongPollingCommandBot(), MessageReceiver {
     init {
         register(startCommand)
         registerDefaultAction { absSender, message ->
-            absSender.sendMessage(messageBundle.getString("unknown.command"), message.chatId)
+            absSender.sendMessage(messageBundle.getProperty("unknown.command"), message.chatId)
             logger.info {
                 """Unknown command volunteer: 
                     user: ${message.chatId},

@@ -7,16 +7,24 @@ services:
     volumes:
       - ~/homeless-bot/mysql-data:/var/lib/mysql
       - ~/homeless-bot/init.sql:/data/application/init.sql
-
+    ports:
+      - "4406:3306"
     environment:
       MYSQL_DATABASE: homeless
-      MYSQL_ROOT_PASSWORD: "${PASSWORD}"
+      MYSQL_ROOT_PASSWORD: 77Rgi3g0
+    healthcheck:
+      test: mysqladmin ping -h 127.0.0.1 -u root --password=77Rgi3g0
+      interval: 2s
+      timeout: 20s
+      retries: 10
   bot:
     image:
       sergalb/homeless-bot:latest
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
     volumes:
       - ~/homeless-bot/logs:/logs
-      - ~/homeless-bot/local-properties
-      - ~/homeless-bot/google-credentials.json
+      - ~/homeless-bot/local.properties:/data/credentials/local.properties
+      - ~/homeless-bot/google-credentials.json:/data/credentials/google-credentials.json
+      - ~/homeless-bot/messages.properties:/data/resources/messages.properties

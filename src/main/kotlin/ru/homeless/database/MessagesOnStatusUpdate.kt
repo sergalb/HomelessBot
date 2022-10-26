@@ -6,6 +6,7 @@ import org.jetbrains.exposed.sql.Transaction
 import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.transactions.TransactionManager
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -15,6 +16,20 @@ object MessagesOnStatusUpdate : Table() {
     val newStatus = varchar("newStatus", 200)
     val message = text("message")
     override val primaryKey = PrimaryKey(oldStatus, newStatus)
+}
+
+data class MessageOnStatusUpdate(
+    val oldStatus: String,
+    val newStatus: String,
+    val message: String
+) {
+    override fun toString(): String {
+        return """
+            $oldStatus
+            $newStatus
+            $message
+               """.trimIndent()
+    }
 }
 
 fun insertOrUpdateMessage(oldStatus: String, newStatus: String, message: String) = transaction {
@@ -35,8 +50,19 @@ fun findMessageByStatuses(oldStatus: String, newStatus: String) = transaction {
     }.firstOrNull()?.get(MessagesOnStatusUpdate.message)
 }
 
+
 fun deleteMessagesWithStatuses(oldStatus: String, newStatus: String) = transaction {
     MessagesOnStatusUpdate.deleteWhere { (MessagesOnStatusUpdate.oldStatus eq oldStatus) and (MessagesOnStatusUpdate.newStatus eq newStatus) }
+}
+
+fun selectAllMessages() = transaction {
+    MessagesOnStatusUpdate.selectAll().map {
+        MessageOnStatusUpdate(
+            it[MessagesOnStatusUpdate.oldStatus],
+            it[MessagesOnStatusUpdate.newStatus],
+            it[MessagesOnStatusUpdate.message],
+        )
+    }
 }
 
 class InsertUpdateOnDuplicate(table: Table, val onDupUpdate: List<Column<*>>) : InsertStatement<Number>(table) {

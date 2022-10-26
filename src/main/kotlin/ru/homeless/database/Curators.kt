@@ -17,7 +17,7 @@ enum class Roles {
         override fun hasMessagePermission() = true
 
         override fun hasRoleSpreadPermission() = true
-        override fun permissionDescription() = messageBundle.getString("boss.permission")
+        override fun permissionDescription() = messageBundle.getProperty("boss.permission")
 
     },
     CURATOR {
@@ -25,14 +25,14 @@ enum class Roles {
 
         override fun hasRoleSpreadPermission() = false
         override fun permissionDescription() =
-            messageBundle.getString("curator.permission")
+            messageBundle.getProperty("curator.permission")
     },
 
     CANDIDATE {
         override fun hasMessagePermission() = false
 
         override fun hasRoleSpreadPermission() = false
-        override fun permissionDescription() = messageBundle.getString("candidate.permission")
+        override fun permissionDescription() = messageBundle.getProperty("candidate.permission")
     };
 
     abstract fun hasMessagePermission(): Boolean
@@ -147,7 +147,7 @@ fun checkPermission(
         val answer = SendMessage()
         answer.setChatId(chatId)
         logger.error { "Could not find curator with id $chatId" }
-        answer.text = messageBundle.getString("unknown.curator")
+        answer.text = messageBundle.getProperty("unknown.curator")
         try {
             absSender.execute(answer)
         } catch (e: TelegramApiException) {
@@ -160,7 +160,7 @@ fun checkPermission(
         val answer = SendMessage()
         answer.setChatId(curator.id.value)
         logger.warn { "User ${curator.firstName} ${curator.secondName} with role ${curator.role} have not permission on action" }
-        answer.text = messageBundle.getString("you.have.not.permission.on")
+        answer.text = messageBundle.getProperty("you.have.not.permission.on")
         try {
             absSender.execute(answer)
         } catch (e: TelegramApiException) {

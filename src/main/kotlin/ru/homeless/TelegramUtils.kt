@@ -9,9 +9,10 @@ import org.telegram.telegrambots.meta.bots.AbsSender
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 
 fun keyboardWithContact(): ReplyKeyboardMarkup {
+    
     val keyboard = KeyboardRow(
         listOf(
-            KeyboardButton(messageBundle.getString("get.phone.keyboard"), true, false, null, null)
+            KeyboardButton(messageBundle.getProperty("get.phone.keyboard"), true, false, null, null)
         )
     )
     return ReplyKeyboardMarkup.builder()

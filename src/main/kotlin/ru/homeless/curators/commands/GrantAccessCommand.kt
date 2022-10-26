@@ -39,7 +39,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
 
         val answer = SendMessage()
         answer.setChatId(chat.id)
-        answer.text = messageBundle.getString("provide.contact.to.grant")
+        answer.text = messageBundle.getProperty("provide.contact.to.grant")
         try {
             updateCuratorStateById(user.id, CuratorState.GRANT_ROLE)
             absSender.execute(answer)
@@ -62,7 +62,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
         val candidate = Phone.byNumber(contact)?.let { findCuratorByPhone(it) }
 
         if (candidate == null) {
-            absSender.sendMessage(messageBundle.getString("could.not.find.candidate.by.phone"), message.chatId) {
+            absSender.sendMessage(messageBundle.getProperty("could.not.find.candidate.by.phone"), message.chatId) {
                 logger.error { "Could not send could.not.find.candidate.by.phone message because of $it" }
             }
             logger.error { "Candidate on role grant is null" }
@@ -75,7 +75,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
             "2" -> Roles.BOSS
             else -> {
                 absSender.sendMessage(
-                    messageBundle.getString("wrong.role.message"),
+                    messageBundle.getProperty("wrong.role.message"),
                     message.chatId
                 )
                 logger.error { "New role for grant access invalid: '$role'" }
@@ -86,7 +86,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
         val answer = SendMessage()
         answer.setChatId(message.chatId)
         answer.text = MessageFormat.format(
-            messageBundle.getString("success.role.grant"),
+            messageBundle.getProperty("success.role.grant"),
             candidate.firstName,
             candidate.secondName ?: "",
             newRole.permissionDescription()
@@ -96,7 +96,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
             curator.updateState(CuratorState.WAITING)
             absSender.execute(answer)
             absSender.sendMessage(
-                messageBundle.getString("your.role.updated"),
+                messageBundle.getProperty("your.role.updated"),
                 candidate.id.value
             )
         } catch (e: TelegramApiException) {
@@ -109,7 +109,7 @@ object GrantAccessCommand : BotCommand("grant_access", "promote candidate to cur
         if (lines.size != 2) {
             val answer = SendMessage()
             answer.setChatId(message.from.id)
-            answer.text = messageBundle.getString("invalid.candidate.promote.message")
+            answer.text = messageBundle.getProperty("invalid.candidate.promote.message")
             try {
                 absSender.execute(answer)
             } catch (e: TelegramApiException) {

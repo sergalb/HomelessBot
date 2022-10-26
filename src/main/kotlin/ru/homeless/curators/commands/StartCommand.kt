@@ -29,7 +29,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
         if (curator == null) {
             answer.setChatId(user.id)
             answer.text = MessageFormat.format(
-                messageBundle.getString("curators.start.message"), user.firstName
+                messageBundle.getProperty("curators.start.message"), user.firstName
             )
 
             answer.replyMarkup = keyboardWithContact()
@@ -56,7 +56,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
         if (normalizedPhone == null) {
             val invalidPhoneMessage = SendMessage()
             invalidPhoneMessage.setChatId(message.chatId)
-            invalidPhoneMessage.text = messageBundle.getString("invalid.phone.format")
+            invalidPhoneMessage.text = messageBundle.getProperty("invalid.phone.format")
             try {
                 absSender.execute(invalidPhoneMessage)
             } catch (e: TelegramApiException) {
@@ -68,7 +68,7 @@ object StartCommand : BotCommand("start", "start conversation with user") {
         candidate.updatePhone(normalizedPhone)
 
         val gratefulMessage = SendMessage()
-        gratefulMessage.text = messageBundle.getString("thank.you.for.phone.curator")
+        gratefulMessage.text = messageBundle.getProperty("thank.you.for.phone.curator")
         gratefulMessage.setChatId(message.chatId)
         gratefulMessage.replyMarkup = ReplyKeyboardRemove(true)
         try {

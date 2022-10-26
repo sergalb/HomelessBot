@@ -3,6 +3,8 @@ package ru.homeless.curators
 import mu.KotlinLogging
 import org.telegram.telegrambots.extensions.bots.commandbot.TelegramLongPollingCommandBot
 import org.telegram.telegrambots.meta.api.objects.Update
+import ru.homeless.curators.commands.CheckMessageEvents
+import ru.homeless.curators.commands.CheckVolunteersCount
 import ru.homeless.curators.commands.GrantAccessCommand
 import ru.homeless.curators.commands.OnStatusUpdateCommand
 import ru.homeless.curators.commands.RemoveStatusUpdateCommand
@@ -23,11 +25,13 @@ val curatorsBot = object : TelegramLongPollingCommandBot() {
         register(GrantAccessCommand)
         register(OnStatusUpdateCommand)
         register(RemoveStatusUpdateCommand)
+        register(CheckMessageEvents)
+        register(CheckVolunteersCount)
         registerDefaultAction { absSender, message ->
-            absSender.sendMessage(messageBundle.getString("unknown.command"), message.chatId)
+            absSender.sendMessage(messageBundle.getProperty("unknown.command"), message.chatId)
             logger.info {
                 """Unknown command curator: 
-                    volunteer: ${message.chatId},
+                    curator: ${message.chatId},
                     text: ${message.text}""".trimIndent()
             }
         }

@@ -31,7 +31,7 @@ object OnStatusUpdateCommand :
         if (curator != null) {
             curator.updateState(CuratorState.REQUEST_ON_UPDATE)
             absSender.sendMessage(
-                messageBundle.getString("request.on.status.update"),
+                messageBundle.getProperty("request.on.status.update"),
                 user.id
             ) { logger.error { "Could not send request.on.status.update message because of ${it.message}" } }
         }
@@ -49,7 +49,7 @@ object OnStatusUpdateCommand :
 
         val messageLines = message.text.lines()
         if (messageLines.size < 3) {
-            absSender.sendMessage(messageBundle.getString("update.message.should.contain.3.lines"), message.chatId)
+            absSender.sendMessage(messageBundle.getProperty("update.message.should.contain.3.lines"), message.chatId)
             return
         }
 
@@ -57,14 +57,14 @@ object OnStatusUpdateCommand :
         val newStatus = messageLines[1].trim()
         if (!isStatusExistForVolunteers(oldStatus)) {
             absSender.sendMessage(
-                MessageFormat.format(messageBundle.getString("volunteers.with.status.does.not.exist"), "старым"),
+                MessageFormat.format(messageBundle.getProperty("volunteers.with.status.does.not.exist"), "старым"),
                 message.chatId
             )
         }
 
         if (!isStatusExistForVolunteers(newStatus)) {
             absSender.sendMessage(
-                MessageFormat.format(messageBundle.getString("volunteers.with.status.does.not.exist"), "новым"),
+                MessageFormat.format(messageBundle.getProperty("volunteers.with.status.does.not.exist"), "новым"),
                 message.chatId
             )
         }
@@ -74,7 +74,7 @@ object OnStatusUpdateCommand :
         curator.updateState(CuratorState.WAITING)
 
         absSender.sendMessage(
-            MessageFormat.format(messageBundle.getString("update.message.created"), oldStatus, newStatus),
+            MessageFormat.format(messageBundle.getProperty("update.message.created"), oldStatus, newStatus),
             message.chatId
         ) { logger.error { "Could not send message update.message.created because of ${it.message}" } }
     }

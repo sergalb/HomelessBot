@@ -28,7 +28,7 @@ object RemoveStatusUpdateCommand :
         if (curator != null) {
             curator.updateState(CuratorState.REQUEST_REMOVE_UPDATE)
             absSender.sendMessage(
-                messageBundle.getString("request.remove.status.update"),
+                messageBundle.getProperty("request.remove.status.update"),
                 user.id
             ) { logger.error { "Could not send request.remove.status.update message because of ${it.message}" } }
         }
@@ -47,7 +47,7 @@ object RemoveStatusUpdateCommand :
         val messageLines = message.text.lines()
         if (messageLines.size != 2) {
             absSender.sendMessage(
-                messageBundle.getString("remove.update.message.should.contain.2.lines"),
+                messageBundle.getProperty("remove.update.message.should.contain.2.lines"),
                 message.chatId
             )
             return
@@ -58,13 +58,13 @@ object RemoveStatusUpdateCommand :
 
         val countDeleted = deleteMessagesWithStatuses(oldStatus, newStatus)
         if (countDeleted == 0) {
-            absSender.sendMessage(messageBundle.getString("could.not.find.update.message"), message.chatId) {
+            absSender.sendMessage(messageBundle.getProperty("could.not.find.update.message"), message.chatId) {
                 logger.error { "Could not send could.not.find.update.message because of ${it.message}" }
             }
         } else {
             curator.updateState(CuratorState.WAITING)
             absSender.sendMessage(
-                MessageFormat.format(messageBundle.getString("update.message.deleted"), oldStatus, newStatus),
+                MessageFormat.format(messageBundle.getProperty("update.message.deleted"), oldStatus, newStatus),
                 message.chatId
             ) { logger.error { "Could not send message update.message.deleted because of ${it.message}" } }
         }

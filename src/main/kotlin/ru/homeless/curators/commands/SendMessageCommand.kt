@@ -48,7 +48,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
         }
         val answer = SendMessage()
         answer.setChatId(user.id)
-        answer.text = messageBundle.getString("request.message.text")
+        answer.text = messageBundle.getProperty("request.message.text")
         try {
             absSender.execute(answer)
             updateCuratorStateById(user.id, CuratorState.REQUEST_MESSAGE)
@@ -71,7 +71,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
 
         val answer = SendMessage()
         answer.setChatId(message.chatId)
-        answer.text = messageBundle.getString("curator.send.message")
+        answer.text = messageBundle.getProperty("curator.send.message")
         try {
             absSender.execute(answer)
         } catch (e: TelegramApiException) {
@@ -112,9 +112,8 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 .filter { it.value.size > 1 }
                 .map { it.value.first() }
                 .joinToString(separator = "\n") { "${it.firstName}  ${it.secondName ?: ""}" }
-
             absSender.sendMessage(
-                MessageFormat.format(messageBundle.getString("duplicated.volunteers"), duplicates),
+                MessageFormat.format(messageBundle.getProperty("duplicated.volunteers"), duplicates),
                 message.chatId
             )
 
@@ -124,7 +123,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
         if (notFoundContacts.isNotEmpty()) {
             absSender.sendMessage(
                 MessageFormat.format(
-                    messageBundle.getString("not.found.contacts"),
+                    messageBundle.getProperty("not.found.contacts"),
                     notFoundContacts.joinToString(separator = "\n")
                 ),
                 message.chatId
@@ -134,10 +133,11 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
 
         val volunteersToSend = groupedVolunteers.mapNotNull { it.value.firstOrNull() }
         if (volunteersToSend.isEmpty()) {
-            absSender.sendMessage(messageBundle.getString("not.found.volunteers.to.send.message"), message.chatId)
+            absSender.sendMessage(messageBundle.getProperty("not.found.volunteers.to.send.message"), message.chatId)
             curator.deleteLastMessage()
             return
         }
+
         lastCuratorMessage.addVolunteersToMessage(volunteersToSend)
         curator.updateState(CuratorState.SEND_PHONE_OR_EMAIL_OR_STATUS)
 
@@ -147,15 +147,15 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                 listOf(
                     InlineKeyboardButton
                         .builder()
-                        .text(messageBundle.getString("now"))
-                        .callbackData(messageBundle.getString("now"))
+                        .text(messageBundle.getProperty("now"))
+                        .callbackData(messageBundle.getProperty("now"))
                         .build()
                 )
             )
         ).build()
 
         absSender.sendMessage(
-            MessageFormat.format(messageBundle.getString("curator.take.contacts"), groupedVolunteers.size),
+            MessageFormat.format(messageBundle.getProperty("curator.take.contacts"), groupedVolunteers.size),
             message.chatId
 //            replyKeyboard = nowKeyboard
         ) {
@@ -200,7 +200,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
             )
         } catch (e: DateTimeException) {
             absSender.sendMessage(
-                MessageFormat.format(messageBundle.getString("incorrect.datetime.format"), e.message),
+                MessageFormat.format(messageBundle.getProperty("incorrect.datetime.format"), e.message),
                 message.chatId
             )
         }
@@ -218,7 +218,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
 
         if (message.text.lowercase() != "да") {
             absSender.sendMessage(
-                messageBundle.getString("dont.confirm.retry"),
+                messageBundle.getProperty("dont.confirm.retry"),
                 message.chatId
             )
             curator.deleteLastMessage()
@@ -236,7 +236,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
         runBlocking {
             volunteersBot.receive(curatorMessage.text, volunteers.map { it.id.value }, date) { ind, e ->
                 var errorDescription = MessageFormat.format(
-                    messageBundle.getString("could.not.send.message.to.volunteer"),
+                    messageBundle.getProperty("could.not.send.message.to.volunteer"),
                     volunteers[ind].firstName,
                     volunteers[ind].secondName ?: ""
                 )
@@ -244,7 +244,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
                     e.errorCode == 400 &&
                     e.apiResponse == "Bad Request: chat not found"
                 ) {
-                    errorDescription += messageBundle.getString("volunteers.not.start.bot")
+                    errorDescription += messageBundle.getProperty("volunteers.not.start.bot")
                 }
                 absSender.sendMessage(errorDescription, message.chatId) {
                     logger.error { "Could not send could.not.send.message.to.volunteer because of ${it.message}" }
@@ -254,7 +254,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
         curator.deleteLastMessage()
 
         absSender.sendMessage(
-            messageBundle.getString("confirm.message"),
+            messageBundle.getProperty("confirm.message"),
             message.chatId
         ) {
             logger.error { "Exception while send 'confirm.message' message to ${curator.firstName} ${curator.secondName} because of ${it.message}" }
@@ -264,7 +264,7 @@ object SendMessageCommand : BotCommand("send_message", "send message to voluntee
     private fun confirmationMessage(curator: Curator): String {
         val message = curator.lastMessage()
         return MessageFormat.format(
-            messageBundle.getString("curator.take.schedule"),
+            messageBundle.getProperty("curator.take.schedule"),
             message?.text ?: "",
             message?.volunteersAsList()?.size ?: "",
             message?.schedule?.format(DateTimeFormatter.ofPattern("dd.MM.yy HH:mm", Locale("ru")))

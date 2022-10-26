@@ -19,10 +19,17 @@ import ru.homeless.google.initSpreadsheetUpdatesDaemon
 import ru.homeless.volunteers.volunteersBot
 import java.nio.file.Path
 import java.util.Properties
-import java.util.ResourceBundle
+import kotlin.io.path.inputStream
 import kotlin.io.path.reader
 
-val messageBundle = ResourceBundle.getBundle("messages")
+val messageBundle: Properties = Properties().also {
+    it.load(
+        Path.of("/data")
+            .resolve("resources")
+            .resolve("messages.properties")
+            .inputStream()
+    )
+}
 
 val credentialsPath = Path.of("/data", "credentials")
 
@@ -43,17 +50,14 @@ fun initDb() {
 fun getLocalProperty(key: String): String {
     val properties = Properties()
     val localProperties = credentialsPath.resolve("local.properties")
-//    if (localProperties.isReadable()) {
-        localProperties.reader().use {
-            properties.load(it)
-        }
-//    } else error("File 'local.properties' not found")
+    localProperties.reader().use {
+        properties.load(it)
+    }
 
     return properties.getProperty(key)
 }
 
 fun main() {
-    println(credentialsPath)
     initDb()
     transaction {
         addLogger(StdOutSqlLogger)
