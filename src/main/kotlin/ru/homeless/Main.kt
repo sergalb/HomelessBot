@@ -1,26 +1,26 @@
 package ru.homeless
 
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.StdOutSqlLogger
 import org.jetbrains.exposed.sql.addLogger
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.telegram.telegrambots.meta.TelegramBotsApi
-import org.telegram.telegrambots.meta.exceptions.TelegramApiException
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession
 import ru.homeless.curators.curatorsBot
-import ru.homeless.database.Curators
-import ru.homeless.database.Messages
-import ru.homeless.database.MessagesOnStatusUpdate
-import ru.homeless.database.MessagesVolunteers
-import ru.homeless.database.SpreadSheetUpdates
-import ru.homeless.database.Volunteers
+import ru.homeless.database.*
 import ru.homeless.google.initSpreadsheetUpdatesDaemon
 import ru.homeless.volunteers.volunteersBot
 import java.nio.file.Path
 import java.util.Properties
 import kotlin.io.path.inputStream
 import kotlin.io.path.reader
+import kotlin.time.Duration.Companion.minutes
 
 val messageBundle: Properties = Properties().also {
     it.load(
@@ -57,7 +57,10 @@ fun getLocalProperty(key: String): String {
     return properties.getProperty(key)
 }
 
+
+@OptIn(DelicateCoroutinesApi::class)
 fun main() {
+    val logger = KotlinLogging.logger {}
     initDb()
     transaction {
         addLogger(StdOutSqlLogger)
@@ -68,14 +71,26 @@ fun main() {
         SchemaUtils.create(SpreadSheetUpdates)
         SchemaUtils.create(MessagesOnStatusUpdate)
     }
-
     initSpreadsheetUpdatesDaemon()
-    try {
-        val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
-        telegramBotsApi.registerBot(volunteersBot)
-        telegramBotsApi.registerBot(curatorsBot)
-    } catch (e: TelegramApiException) {
-        println("exception ${e.message}")
+    GlobalScope.launch {
+        while (true) {
+            val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
+            try {
+                val volunteersSession = telegramBotsApi.registerBot(volunteersBot)
+                val curatorsSession = telegramBotsApi.registerBot(curatorsBot)
+                while (true) {
+                    if (!volunteersSession.isRunning) {
+                        volunteersSession.start()
+                    }
+                    if (!curatorsSession.isRunning) {
+                        curatorsSession.start()
+                    }
+                    delay((5).minutes)
+                }
+            } catch (e: Exception) {
+                logger.error(e) {}
+            }
+        }
     }
 
 }

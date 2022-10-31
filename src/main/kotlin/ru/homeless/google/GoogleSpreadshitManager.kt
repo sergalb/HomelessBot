@@ -44,7 +44,6 @@ private val service by lazy {
  * @return An authorized Credential object.
  * @throws IOException If the credentials.json file cannot be found.
  */
-
 fun getCredentials(HTTP_TRANSPORT: NetHttpTransport, scopes: List<String>): Credential {
     val credentialsReader = credentialsPath.resolve(CREDENTIALS_FILE_PATH).reader()
     val clientSecrets = GoogleClientSecrets.load(JSON_FACTORY, credentialsReader)
@@ -101,7 +100,7 @@ fun findUserByPhone(phone: Phone): SpreadSheetVolunteer? {
             }
         }
     } catch (e: FileNotFoundException) {
-        logger.error { e.message}
+        logger.error(e) { e.message}
     }
     return null
 }
