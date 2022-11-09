@@ -1,9 +1,6 @@
 package ru.homeless
 
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import mu.KotlinLogging
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -17,10 +14,10 @@ import ru.homeless.database.*
 import ru.homeless.google.initSpreadsheetUpdatesDaemon
 import ru.homeless.volunteers.volunteersBot
 import java.nio.file.Path
-import java.util.Properties
+import java.util.*
 import kotlin.io.path.inputStream
 import kotlin.io.path.reader
-import kotlin.time.Duration.Companion.minutes
+import kotlin.system.exitProcess
 
 val messageBundle: Properties = Properties().also {
     it.load(
@@ -72,25 +69,14 @@ fun main() {
         SchemaUtils.create(MessagesOnStatusUpdate)
     }
     initSpreadsheetUpdatesDaemon()
-    GlobalScope.launch {
-        while (true) {
-            val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
-            try {
-                val volunteersSession = telegramBotsApi.registerBot(volunteersBot)
-                val curatorsSession = telegramBotsApi.registerBot(curatorsBot)
-                while (true) {
-                    if (!volunteersSession.isRunning) {
-                        volunteersSession.start()
-                    }
-                    if (!curatorsSession.isRunning) {
-                        curatorsSession.start()
-                    }
-                    delay((5).minutes)
-                }
-            } catch (e: Exception) {
-                logger.error(e) {}
-            }
-        }
-    }
 
+
+    val telegramBotsApi = TelegramBotsApi(DefaultBotSession::class.java)
+    try {
+        val volunteersSession = telegramBotsApi.registerBot(volunteersBot)
+        val curatorsSession = telegramBotsApi.registerBot(curatorsBot)
+    } catch (e: Exception) {
+        logger.error(e) {}
+        exitProcess(1)
+    }
 }

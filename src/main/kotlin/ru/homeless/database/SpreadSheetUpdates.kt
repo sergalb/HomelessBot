@@ -7,12 +7,12 @@ import org.jetbrains.exposed.dao.id.LongIdTable
 import org.jetbrains.exposed.sql.deleteAll
 import org.jetbrains.exposed.sql.transactions.transaction
 
-enum class Field {
-    FIRST_NAME,
-    SECOND_NAME,
-    PHONE,
-    EMAIL,
-    STATUS
+enum class Field(columnIndex: Int) {
+    FIRST_NAME(4),
+    SECOND_NAME(5),
+    PHONE(7),
+    EMAIL(6),
+    STATUS(18)
 
 }
 

@@ -61,13 +61,6 @@ object OnStatusUpdateCommand :
                 message.chatId
             )
         }
-
-        if (!isStatusExistForVolunteers(newStatus)) {
-            absSender.sendMessage(
-                MessageFormat.format(messageBundle.getProperty("volunteers.with.status.does.not.exist"), "новым"),
-                message.chatId
-            )
-        }
         val text = messageLines.drop(2).joinToString(separator = "\n")
 
         insertOrUpdateMessage(oldStatus, newStatus, text)

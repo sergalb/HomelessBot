@@ -7,3 +7,6 @@ data
 tokens
 google-credentials.json
 init.sql
+gradle/wrapper
+gradlew
+gradlew.bat

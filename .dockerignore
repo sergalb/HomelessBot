@@ -1,5 +1,7 @@
 .gradle
-build
 .idea
 data
 tokens
+gradle
+gradlew
+gradlew.bat
