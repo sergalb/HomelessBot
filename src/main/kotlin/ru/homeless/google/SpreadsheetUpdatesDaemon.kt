@@ -27,7 +27,7 @@ fun initSpreadsheetUpdatesDaemon() = GlobalScope.launch {
                     val volunteer =
                         findVolunteerByPhone(update.volunteerPhone) ?: findVolunteerByEmail(update.volunteerEmail)
                     if (volunteer != null) {
-                        when (update.field) {
+                        when (Field.fieldByColumnIndex(update.fieldIndex)) {
                             Field.FIRST_NAME -> volunteer.updateName(update.newValue)
                             Field.SECOND_NAME -> volunteer.updateSecondName(update.newValue)
                             Field.PHONE -> volunteer.updatePhone(update.newValue)
