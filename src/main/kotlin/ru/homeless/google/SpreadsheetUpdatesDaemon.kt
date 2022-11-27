@@ -41,11 +41,12 @@ fun initSpreadsheetUpdatesDaemon() = GlobalScope.launch {
                             }
                         }
                     }
+                    logger.warn { "Could not find volunteer with phone: '${update.volunteerPhone}' or email '${update.volunteerEmail}'" }
                 }
             }
             delay(DELAY)
         } catch (e: Exception) {
-            logger.error(e) {"Error while fetching spreadsheet updates"}
+            logger.error(e) { "Error while fetching spreadsheet updates" }
         }
     }
 }
